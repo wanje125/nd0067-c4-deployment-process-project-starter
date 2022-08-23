@@ -14,6 +14,6 @@
         "deploy": "npm run api:deploy && npm run frontend:deploy"
     },
     "dependencies": {
-        "typescript": "^4.7.4"
+        "typescript": "3.5"
     }
 }
