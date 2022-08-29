@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\config",
+    "\\migrations",
+    "\\models",
+    "\\src",
+    "\\src\\controllers",
+    "\\src\\controllers\\v0",
+    "\\src\\controllers\\v0\\users",
+    "\\src\\controllers\\v0\\users\\models",
+    "\\src\\controllers\\v0\\users\\routes"
+  ],
+  "SelectedNode": "\\src\\controllers\\v0\\model.index.ts",
+  "PreviewInSolutionExplorer": false
+}

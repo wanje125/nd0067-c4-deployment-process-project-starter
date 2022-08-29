@@ -1,24 +1,28 @@
-import * as dotenv from "dotenv";
+import dotenv from 'dotenv'
 import cors from 'cors';
 import express from "express";
-import { sequelize } from "./sequelize";
+import sequelize from "./sequelize";
 
 import { IndexRouter } from "./controllers/v0/index.router";
 
 import bodyParser from "body-parser";
-import { V0_FEED_MODELS, V0_USER_MODELS } from "./controllers/v0/model.index";
+import { FEED_MODEL, USER_MODEL } from "./controllers/v0/model.index";
 
 (async () => {
   dotenv.config();
+    console.log(FEED_MODEL)
+    console.log(USER_MODEL)
+/*  Before you can use your models you have to tell sequelize where they can be found.So either
+  set models in the sequelize config or add the required models later on by calling
+    sequelize.addModels([Person]) or sequelize.addModels([__dirname + '/models']):*/
 
-  await sequelize.addModels(V0_FEED_MODELS);
-  await sequelize.addModels(V0_USER_MODELS);
+
   await sequelize.sync();
 
   console.log("Database Connected");
 
   const app = express();
-  const port = process.env.PORT || 8080;
+  const port = 3000;
 
   app.use(bodyParser.json());
 

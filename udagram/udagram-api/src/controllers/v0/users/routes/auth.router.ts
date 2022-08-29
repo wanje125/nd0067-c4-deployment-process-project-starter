@@ -8,7 +8,6 @@ import * as jwt from 'jsonwebtoken';
 import {NextFunction} from 'connect';
 
 import * as EmailValidator from 'email-validator';
-import {config} from 'bluebird';
 
 const router: Router = Router();
 var bcrypt = require('bcryptjs');
@@ -23,8 +22,9 @@ async function comparePasswords(plainTextPassword: string, hash: string): Promis
   return await bcrypt.compare(plainTextPassword, hash);
 }
 
+// jwt 토큰 생성
 function generateJWT(user: User): string {
-    return jwt.sign(user.short(), c.config.jwt.secret || "");
+    return jwt.sign(user.short(), c.config.jwt.secret || ""); // 첫번째는 payload값, 두번째는 secret
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -64,7 +64,7 @@ router.post('/login', async (req: Request, res: Response) => {
     return res.status(400).send({auth: false, message: 'Password is required.'});
   }
 
-  const user = await User.findByPk(email);
+    const user = await User.findOne({ where: { email: email } });
   if (!user) {
     return res.status(401).send({auth: false, message: 'User was not found..'});
   }
@@ -82,7 +82,8 @@ router.post('/login', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   const email = req.body.email;
-  const plainTextPassword = req.body.password;
+    const plainTextPassword = req.body.password;
+    const username = req.body.username;
 
   if (!email || !EmailValidator.validate(email)) {
     return res.status(400).send({auth: false, message: 'Email is missing or malformed.'});
@@ -91,17 +92,20 @@ router.post('/', async (req: Request, res: Response) => {
   if (!plainTextPassword) {
     return res.status(400).send({auth: false, message: 'Password is required.'});
   }
-
-  const user = await User.findByPk(email);
+    if (!username) {
+        return res.status(400).send({ auth: false, message: 'Username is required.' });
+    }
+    const user = await User.findOne({ where: { email: email } });
   if (user) {
     return res.status(422).send({auth: false, message: 'User already exists.'});
   }
 
   const generatedHash = await generatePassword(plainTextPassword);
-
+    // @ts-ignore
   const newUser = await new User({
     email: email,
-    passwordHash: generatedHash,
+      passwordHash: generatedHash,
+      username: username
   });
 
   const savedUser = await newUser.save();

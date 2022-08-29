@@ -1,5 +1,7 @@
 import {Router, Request, Response} from 'express';
-import {FeedItem} from '../models/FeedItem';
+import { FeedItem } from '../models/FeedItem';
+import { User } from '../../users/models/User';
+
 import {NextFunction} from 'connect';
 import * as jwt from 'jsonwebtoken';
 import * as AWS from '../../../../aws';
@@ -21,7 +23,10 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     return jwt.verify(token, c.config.jwt.secret || "", (err, decoded) => {
     if (err) {
       return res.status(500).send({auth: false, message: 'Failed to authenticate.'});
-    }
+        }
+
+        res.locals.user_id = decoded;
+        console.log(res.locals.user_id);
     return next();
   });
 }
@@ -58,25 +63,38 @@ router.get('/signed-url/:fileName',
 router.post('/',
     requireAuth,
     async (req: Request, res: Response) => {
-      const caption = req.body.caption;
-      const fileName = req.body.url; // same as S3 key name
+        const caption = req.body.caption;
+        const fileName = req.body.url; // same as S3 key name
+        const description = req.body.description;
+        const email = res.locals.user_id.email
 
+        const user = await User.findOne({ where: { email: email } })
+        console.log(user)
+        const userId:number = user?.getDataValue('id')
+        console.log(userId)
       if (!caption) {
         return res.status(400).send({message: 'Caption is required or malformed.'});
       }
 
       if (!fileName) {
         return res.status(400).send({message: 'File url is required.'});
-      }
+        }
 
+      if (!description) {
+          return res.status(400).send({ message: 'description is required.' });
+        }
+      // @ts-ignore
       const item = await new FeedItem({
-        caption: caption,
-        url: fileName,
+          caption: caption,
+          url: fileName,
+          description: description,
+          userId: userId
       });
+      console.log(item)
 
       const savedItem = await item.save();
 
-      savedItem.url = AWS.getGetSignedUrl(savedItem.url);
+      //savedItem.url = AWS.getGetSignedUrl(savedItem.url);
       res.status(201).send(savedItem);
     });
 

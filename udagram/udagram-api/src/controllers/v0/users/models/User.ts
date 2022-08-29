@@ -1,13 +1,21 @@
-import {Table, Column, Model, PrimaryKey, CreatedAt, UpdatedAt} from 'sequelize-typescript';
+import { Table, Column, Model, PrimaryKey, CreatedAt, UpdatedAt, HasMany,Unique} from 'sequelize-typescript';
+import { FeedItem } from '../../feed/models/FeedItem'
+import  sequelize  from '../../../../sequelize'
 
-@Table
+@Table({
+    modelName:'User'
+})
 export class User extends Model<User> {
-  @PrimaryKey
+
+  @Unique
   @Column
   public email!: string;
 
   @Column
-  public passwordHash!: string;
+    public passwordHash!: string;
+
+    @Column
+    public username!: string;
 
   @Column
   @CreatedAt
@@ -16,6 +24,9 @@ export class User extends Model<User> {
   @Column
   @UpdatedAt
   public updatedAt: Date = new Date();
+
+  @HasMany(() => FeedItem)
+  feeditems: FeedItem[]
 
   short() {
     return {
